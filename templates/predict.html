@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Energy Prediction</title>
+    <style>
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('/static/download.webp');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        form {
+            background-color: #fff;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <form onsubmit="predict(event)">
+        <h2>Energy Consumption Prediction</h2>
+
+        <div class="form-group">
+            <label for="buildingType">Building Type:</label>
+            <select name="Building Type" id="buildingType" required></select>
+        </div>
+
+        <div class="form-group">
+            <label for="squareFootage">Square Footage:</label>
+            <input type="number" id="squareFootage" name="Square Footage" required>
+        </div>
+
+        <div class="form-group">
+            <label for="occupants">Number of Occupants:</label>
+            <input type="number" id="occupants" name="Number of Occupants" required>
+        </div>
+
+        <div class="form-group">
+            <label for="appliances">Appliances Used:</label>
+            <input type="text" id="appliances" name="Appliances Used" required>
+        </div>
+
+        <div class="form-group">
+            <label for="temperature">Average Temperature:</label>
+            <input type="number" id="temperature" name="Average Temperature" required>
+        </div>
+
+        <div class="form-group">
+            <label for="dayOfWeek">Day of Week:</label>
+            <select name="Day of Week" id="dayOfWeek" required></select>
+        </div>
+
+        <button type="submit">Predict</button>
+        <p id="result"></p>
+    </form>
+
+    <script>
+        async function fetchOptions() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Session expired or unauthorized. Please login again.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const buildingRes = await fetch('/Building_options', {
+                    headers: { Authorization: 'Bearer ' + token }
+                });
+                const buildings = await buildingRes.json();
+                const buildingSelect = document.getElementById('buildingType');
+                buildings.forEach(b => {
+                    const option = document.createElement('option');
+                    option.value = b;
+                    option.text = b;
+                    buildingSelect.add(option);
+                });
+
+                const dayRes = await fetch('/Day_options', {
+                    headers: { Authorization: 'Bearer ' + token }
+                });
+                const days = await dayRes.json();
+                const daySelect = document.getElementById('dayOfWeek');
+                days.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d;
+                    option.text = d;
+                    daySelect.add(option);
+                });
+            } catch (error) {
+                console.error("Error loading options:", error);
+            }
+        }
+
+        async function predict(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch('/prediction', {
+                    method: 'POST',
+                    headers: { Authorization: 'Bearer ' + token },
+                    body: formData
+                });
+                const result = await res.json();
+                document.getElementById('result').innerText = result.result || result.message;
+            } catch (error) {
+                document.getElementById('result').innerText = "Prediction failed. Try again.";
+            }
+        }
+
+        fetchOptions();
+    </script>
+</body>
+</html>

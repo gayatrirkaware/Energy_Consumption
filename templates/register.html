@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('/static/register.webp');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        form {
+            text-align: center;
+            padding: 30px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        input {
+            display: block;
+            margin: 10px auto;
+            padding: 8px;
+            width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <form onsubmit="register(event)">
+        <h2>Register</h2>
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email_id" placeholder="Email" required>
+        <input type="text" name="mobile_number" placeholder="Mobile Number" required>
+        <input type="date" name="dob" placeholder="Date of Birth" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Register</button>
+        <p><a href="login.html">Back to Login</a></p>
+    </form>
+
+    <script>
+        async function register(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const res = await fetch('/register', {
+                method: 'POST',
+                body: formData
+            });
+            const json = await res.json();
+            alert(json.message);
+            if (json.status === 'Success') {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
